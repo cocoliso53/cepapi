@@ -16,9 +16,7 @@ fn json_hello(req: Request) -> Response {
   }
 }
 
-fn html_hello(req: Request) -> Response {
-  use _req <- web.middleware(req)
-
+fn html_hello(_req: Request) -> Response {
   let body = "<h1>Hello, Joe!</h1>"
 
   wisp.html_response(body, 200)
