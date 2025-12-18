@@ -123,6 +123,8 @@ pub fn tipo_criterio_code_from_name(criterio: String) -> option.Option(String) {
   }
 }
 
+/// The result of this function should be use to create a query string 
+/// to send to banxico 
 pub fn cep_data_json_to_list(
   data: UserCepData,
 ) -> Result(List(#(String, String)), String) {
