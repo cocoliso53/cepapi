@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/regexp
 import html_parser.{type Element, Content, EndElement, StartElement}
 
 pub fn find_content(html: List(Element)) -> List(#(String, String)) {
@@ -12,6 +13,56 @@ pub fn find_content(html: List(Element)) -> List(#(String, String)) {
       ..tail
     ] -> list.append([#(field_name, field_value)], find_content(tail))
     [_, ..tail] -> find_content(tail)
+  }
+}
+
+pub fn html_field_name_to_json_key(
+  html_content: String,
+) -> Result(String, String) {
+  let assert Ok(re_numref) =
+    regexp.from_string("(?i)^\\s*n[uú]mero de referencia\\s*$")
+  let assert Ok(re_clave_rastreo) =
+    regexp.from_string("(?i)^\\s*clave de rastreo\\s*$")
+  let assert Ok(re_emisor) =
+    regexp.from_string(
+      "(?i)^\\s*instituci(?:ó|o|&oacute;)n emisora del pago\\s*$",
+    )
+  let assert Ok(re_receptor) =
+    regexp.from_string(
+      "(?i)^\\s*instituci(?:ó|o|&oacute;)n receptora del pago\\s*$",
+    )
+  let assert Ok(re_estado) =
+    regexp.from_string("(?i)^\\s*estado del pago en banxico\\s*$")
+  let assert Ok(re_fecha_recepcion) =
+    regexp.from_string("(?i)^\\s*fecha y hora de recepci(?:ó|o|&oacute;)n\\s*$")
+  let assert Ok(re_fecha_procesamiento) =
+    regexp.from_string("(?i)^\\s*fecha y hora de procesamiento\\s*$")
+  let assert Ok(re_beneficiario) =
+    regexp.from_string("(?i)^\\s*cuenta beneficiaria\\s*$")
+  let assert Ok(re_monto) = regexp.from_string("(?i)^\\s*monto\\s*$")
+
+  let pattern_to_key = [
+    #(re_numref, "numeroReferencia"),
+    #(re_clave_rastreo, "claveRastreo"),
+    #(re_emisor, "intitucionEmisora"),
+    #(re_receptor, "institucionReceptora"),
+    #(re_estado, "estadoBanxico"),
+    #(re_fecha_recepcion, "fechaRecepcion"),
+    #(re_fecha_procesamiento, "fechaProcesamiento"),
+    #(re_beneficiario, "cuentaBeneficiaria"),
+    #(re_monto, "monto"),
+  ]
+
+  pattern_to_key
+  |> list.find(fn(x) {
+    let #(re, _) = x
+    regexp.check(with: re, content: html_content)
+  })
+  |> fn(x) {
+    case x {
+      Ok(#(_, val)) -> Ok(val)
+      Error(_) -> Error("No match found for html content: " <> html_content)
+    }
   }
 }
 
@@ -36,5 +87,4 @@ pub fn prueba() {
                 </table> "
   |> html_parser.as_list
   |> find_content
-  |> echo
 }
