@@ -1,7 +1,10 @@
+import gleam/json.{type Json}
 import gleam/list
 import gleam/regexp
 import html_parser.{type Element, Content, EndElement, StartElement}
 
+/// This is simply a parser, so it shouln't throw any errors
+/// if anything it will just return an empty list
 pub fn find_content(html: List(Element)) -> List(#(String, String)) {
   case html {
     [] -> []
@@ -66,7 +69,19 @@ pub fn html_field_name_to_json_key(
   }
 }
 
-// TODO: function to go from HTML text to appropiate json response text
+/// html_tuple should be one of the elements of the list
+/// returned by find_content
+pub fn htlm_tuple_to_json_ready_tuple(
+  html_tuple: #(String, String),
+) -> Result(#(String, Json), String) {
+  let #(html_key, html_value) = html_tuple
+  let json_key = html_field_name_to_json_key(html_key)
+
+  case json_key {
+    Ok(key) -> Ok(#(key, json.string(html_value)))
+    Error(error) -> Error(error)
+  }
+}
 
 pub fn prueba() {
   "<table  id=\"xxx\" class=\"styled-table vertical\" style=\"margin: auto;\">

@@ -1,5 +1,6 @@
 import app/html_banxico_parser
 import gleam/list
+import gleeunit/should
 
 pub fn html_field_name_to_json_key_numero_referencia_test() {
   let string_scenarios = [
@@ -179,6 +180,21 @@ pub fn html_field_name_to_json_key_monto_test() {
       Ok("monto"),
       Error("No match found for html content: Montos"),
     ]
+}
+
+/// Should just convert the html key to a json key and make
+/// the value a json string
+pub fn htlm_tuple_to_json_ready_tuple_happy_path_test() {
+  #("Número de Referencia", "161225")
+  |> html_banxico_parser.htlm_tuple_to_json_ready_tuple
+  |> should.be_ok
+}
+
+/// Error should propagate
+pub fn htlm_tuple_to_json_ready_tuple_error_path_test() {
+  #("mumero de réferencia", "161225")
+  |> html_banxico_parser.htlm_tuple_to_json_ready_tuple
+  |> should.equal(Error("No match found for html content: mumero de réferencia"))
 }
 
 pub fn prueba_test() {
