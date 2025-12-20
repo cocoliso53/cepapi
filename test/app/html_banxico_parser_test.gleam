@@ -55,9 +55,9 @@ pub fn html_field_name_to_json_key_institucion_emisora_test() {
       html_banxico_parser.html_field_name_to_json_key,
     )
     == [
-      Ok("intitucionEmisora"),
-      Ok("intitucionEmisora"),
-      Ok("intitucionEmisora"),
+      Ok("institucionEmisora"),
+      Ok("institucionEmisora"),
+      Ok("institucionEmisora"),
       Error("No match found for html content: Institución emisora del pag"),
     ]
 }
@@ -247,6 +247,54 @@ pub fn html_tuples_to_json_tuples_multiple_field_error_test() {
   ))
 }
 
-pub fn prueba_test() {
-  assert html_banxico_parser.prueba() == []
+pub fn parse_html_to_json_tuple_happy_path_test() {
+  let html_string =
+    "<table  id=\"xxx\" class=\"styled-table vertical\" style=\"margin: auto;\">
+      <tbody>
+        <tr><td>Número de Referencia</td><td>161225</td></tr>
+        <tr><td>Clave de Rastreo</td><td>NU3986LEURU487V8N1SLMDB8FM8O</td></tr>
+        <tr><td>Instituci&oacute;n emisora del pago</td><td>NU MEXICO</td></tr>
+        <tr><td>Instituci&oacute;n receptora del pago</td><td>STP</td></tr>
+        <tr><td>Estado del pago en Banxico</td><td>Liquidado</td></tr>
+        <tr><td>Fecha y hora de recepción</td><td>16/12/2025 12:54:42</td></tr>
+        <tr><td>Fecha y hora de procesamiento</td><td>16/12/2025 12:54:42</td></tr>
+                        
+        <tr class=\"columna-cuenta\"><td>Cuenta Beneficiaria</td><td>646180537900000009</td></tr>                       
+        <tr class=\"columna-monto\"><td>Monto</td><td>9200.00</td></tr>
+                                                    
+      </tbody>
+    </table> "
+
+  should.be_ok(html_banxico_parser.parse_html_to_json_tuple(html_string))
+}
+
+pub fn parse_html_to_json_tuple_bad_fields_test() {
+  let html_string =
+    "<table  id=\"xxx\" class=\"styled-table vertical\" style=\"margin: auto;\">
+      <tbody>
+        <tr><td>bad field</td><td>161225</td></tr>
+        <tr><td>Clave de Rastreo</td><td>NU3986LEURU487V8N1SLMDB8FM8O</td></tr>
+        <tr><td>Instituci&oacute;n emisora del pago</td><td>NU MEXICO</td></tr>
+        <tr><td>Instituci&oacute;n receptora del pago</td><td>STP</td></tr>
+        <tr><td>Estado del pago en Banxico</td><td>Liquidado</td></tr>
+        <tr><td>Fecha y hora de recepción</td><td>16/12/2025 12:54:42</td></tr>
+        <tr><td>Fecha y hora de procesamiento</td><td>16/12/2025 12:54:42</td></tr>
+                        
+        <tr class=\"columna-cuenta\"><td>and this one too</td><td>646180537900000009</td></tr>                       
+        <tr class=\"columna-monto\"><td>Monto</td><td>9200.00</td></tr>
+                                                    
+      </tbody>
+    </table> "
+
+  should.equal(
+    html_banxico_parser.parse_html_to_json_tuple(html_string),
+    Error(
+      "No match found for html content: bad field, No match found for html content: and this one too",
+    ),
+  )
+}
+
+pub fn parse_html_to_json_tuple_no_field_at_all_test() {
+  let html_string = "<h1>Hello, Joe!</h1>"
+  should.be_error(html_banxico_parser.parse_html_to_json_tuple(html_string))
 }

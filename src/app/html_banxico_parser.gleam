@@ -48,7 +48,7 @@ pub fn html_field_name_to_json_key(
   let pattern_to_key = [
     #(re_numref, "numeroReferencia"),
     #(re_clave_rastreo, "claveRastreo"),
-    #(re_emisor, "intitucionEmisora"),
+    #(re_emisor, "institucionEmisora"),
     #(re_receptor, "institucionReceptora"),
     #(re_estado, "estadoBanxico"),
     #(re_fecha_recepcion, "fechaRecepcion"),
@@ -103,7 +103,8 @@ fn concat_errors(json_tuples: List(Result(_, String))) -> Result(_, String) {
   |> fn(x) { Error(string.join(x, ", ")) }
 }
 
-// TODO: test
+/// This will only work as intended if 
+/// html_tuples is not empty
 pub fn html_tuples_to_json_tuples(
   html_tuples: List(#(String, String)),
 ) -> Result(List(#(String, Json)), String) {
@@ -117,23 +118,19 @@ pub fn html_tuples_to_json_tuples(
   }
 }
 
-pub fn prueba() {
-  "<table  id=\"xxx\" class=\"styled-table vertical\" style=\"margin: auto;\">
-                    <tbody>
-                        <tr><td>Número de Referencia</td><td>161225</td></tr>
-                        <tr><td>Clave de Rastreo</td><td>NU3986LEURU487V8N1SLMDB8FM8O</td></tr>
-                        <tr><td>Instituci&oacute;n emisora del pago</td><td>NU MEXICO</td></tr>
-                        <tr><td>Instituci&oacute;n receptora del pago</td><td>STP</td></tr>
-                        <tr><td>Estado del pago en Banxico</td><td>Liquidado</td></tr>
-                        <tr><td>Fecha y hora de recepción</td><td>16/12/2025 12:54:42</td></tr>
-                        <tr><td>Fecha y hora de procesamiento</td><td>16/12/2025 12:54:42</td></tr>
-                        
-                            <tr class=\"columna-cuenta\"><td>Cuenta Beneficiaria</td><td>646180537900000009</td></tr>
-                         
-                            <tr class=\"columna-monto\"><td>Monto</td><td>9200.00</td></tr>
-                                                    
-                    </tbody>
-                </table> "
+/// html_string should be a string with 
+/// valid HTML content/page, else will
+/// return Error
+pub fn parse_html_to_json_tuple(
+  html_string: String,
+) -> Result(List(#(String, Json)), String) {
+  html_string
   |> html_parser.as_list
   |> find_content
+  |> fn(x) {
+    case x {
+      [] -> Error("HTML not formated as expected " <> html_string)
+      _ -> html_tuples_to_json_tuples(x)
+    }
+  }
 }
