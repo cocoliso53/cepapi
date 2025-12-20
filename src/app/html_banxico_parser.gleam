@@ -1,6 +1,7 @@
 import gleam/json.{type Json}
 import gleam/list
 import gleam/regexp
+import gleam/string
 import html_parser.{type Element, Content, EndElement, StartElement}
 
 /// This is simply a parser, so it shouln't throw any errors
@@ -80,6 +81,39 @@ pub fn htlm_tuple_to_json_ready_tuple(
   case json_key {
     Ok(key) -> Ok(#(key, json.string(html_value)))
     Error(error) -> Error(error)
+  }
+}
+
+fn concat_errors(json_tuples: List(Result(_, String))) -> Result(_, String) {
+  json_tuples
+  |> list.filter(fn(x) {
+    case x {
+      Error(_) -> True
+      _ -> False
+    }
+  })
+  |> list.map(fn(x) {
+    case x {
+      Error(error) -> error
+      // this clause should never fire
+      // because of the filter above
+      _ -> ""
+    }
+  })
+  |> fn(x) { Error(string.join(x, ", ")) }
+}
+
+// TODO: test
+pub fn html_tuples_to_json_tuples(
+  html_tuples: List(#(String, String)),
+) -> Result(List(#(String, Json)), String) {
+  let json_tuples = list.map(html_tuples, htlm_tuple_to_json_ready_tuple)
+
+  let ok_results = list.filter_map(html_tuples, htlm_tuple_to_json_ready_tuple)
+
+  case list.length(json_tuples) == list.length(ok_results) {
+    True -> Ok(ok_results)
+    False -> concat_errors(json_tuples)
   }
 }
 

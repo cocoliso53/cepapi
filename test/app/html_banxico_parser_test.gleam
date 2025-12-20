@@ -197,6 +197,56 @@ pub fn htlm_tuple_to_json_ready_tuple_error_path_test() {
   |> should.equal(Error("No match found for html content: mumero de réferencia"))
 }
 
+pub fn html_tuples_to_json_tuples_happy_path_test() {
+  [
+    #("Número de Referencia", "161225"),
+    #("Clave de Rastreo", "NU3986LEURU487V8N1SLMDB8FM8O"),
+    #("Instituci&oacute;n emisora del pago", "NU MEXICO"),
+    #("Instituci&oacute;n receptora del pago", "STP"),
+    #("Estado del pago en Banxico", "Liquidado"),
+    #("Fecha y hora de recepción", "16/12/2025 12:54:42"),
+    #("Fecha y hora de procesamiento", "16/12/2025 12:54:42"),
+    #("Cuenta Beneficiaria", "646180537900000009"),
+    #("Monto", "9200.00"),
+  ]
+  |> html_banxico_parser.html_tuples_to_json_tuples
+  |> should.be_ok
+}
+
+pub fn html_tuples_to_json_tuples_single_field_error_test() {
+  [
+    #("bad field", "161225"),
+    #("Clave de Rastreo", "NU3986LEURU487V8N1SLMDB8FM8O"),
+    #("Instituci&oacute;n emisora del pago", "NU MEXICO"),
+    #("Instituci&oacute;n receptora del pago", "STP"),
+    #("Estado del pago en Banxico", "Liquidado"),
+    #("Fecha y hora de recepción", "16/12/2025 12:54:42"),
+    #("Fecha y hora de procesamiento", "16/12/2025 12:54:42"),
+    #("Cuenta Beneficiaria", "646180537900000009"),
+    #("Monto", "9200.00"),
+  ]
+  |> html_banxico_parser.html_tuples_to_json_tuples
+  |> should.equal(Error("No match found for html content: bad field"))
+}
+
+pub fn html_tuples_to_json_tuples_multiple_field_error_test() {
+  [
+    #("bad field", "161225"),
+    #("Clave de Rastreo", "NU3986LEURU487V8N1SLMDB8FM8O"),
+    #("Instituci&oacute;n emisora del pago", "NU MEXICO"),
+    #("Instituci&oacute;n receptora del pago", "STP"),
+    #("Estado del pago en Banxico", "Liquidado"),
+    #("this one too", "16/12/2025 12:54:42"),
+    #("Fecha y hora de procesamiento", "16/12/2025 12:54:42"),
+    #("Cuenta Beneficiaria", "646180537900000009"),
+    #("and this one", "9200.00"),
+  ]
+  |> html_banxico_parser.html_tuples_to_json_tuples
+  |> should.equal(Error(
+    "No match found for html content: bad field, No match found for html content: this one too, No match found for html content: and this one",
+  ))
+}
+
 pub fn prueba_test() {
   assert html_banxico_parser.prueba() == []
 }
