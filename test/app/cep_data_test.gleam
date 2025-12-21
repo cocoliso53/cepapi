@@ -14,7 +14,7 @@ pub fn tipo_criterio_code_from_name_invalid_option_test() {
   assert cep_data.tipo_criterio_code_from_name("invalid") == None
 }
 
-pub fn cep_data_json_to_list_happy_path_test() {
+pub fn cep_data_to_params_list_happy_path_test() {
   let data =
     cep_data.UserCepData(
       tipo_criterio: "claveRastreo",
@@ -26,7 +26,7 @@ pub fn cep_data_json_to_list_happy_path_test() {
       monto: "100",
     )
 
-  let res = cep_data.cep_data_json_to_list(data)
+  let res = cep_data.cep_data_to_params_list(data)
   should.equal(
     res,
     Ok([
@@ -38,12 +38,13 @@ pub fn cep_data_json_to_list_happy_path_test() {
       #("receptorParticipante", "0"),
       #("monto", "100"),
       #("captcha", "c"),
+      #("criterio", "ABC123"),
       #("tipoConsulta", "0"),
     ]),
   )
 }
 
-pub fn cep_data_json_to_list_wrong_institution_test() {
+pub fn cep_data_to_params_list_wrong_institution_test() {
   let data =
     cep_data.UserCepData(
       tipo_criterio: "claveRastreo",
@@ -55,11 +56,11 @@ pub fn cep_data_json_to_list_wrong_institution_test() {
       monto: "100",
     )
 
-  let res = cep_data.cep_data_json_to_list(data)
+  let res = cep_data.cep_data_to_params_list(data)
   assert res == Error("Emisor incorrecto")
 }
 
-pub fn cep_data_json_to_list_wrong_criterio_test() {
+pub fn cep_data_to_params_list_wrong_criterio_test() {
   let data =
     cep_data.UserCepData(
       tipo_criterio: "INVALIDO",
@@ -71,6 +72,6 @@ pub fn cep_data_json_to_list_wrong_criterio_test() {
       monto: "100",
     )
 
-  let res = cep_data.cep_data_json_to_list(data)
+  let res = cep_data.cep_data_to_params_list(data)
   assert res == Error("Tipo de criterio no valido")
 }
