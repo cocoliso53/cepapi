@@ -1,6 +1,7 @@
 import app/web
 import gleam/http.{Get, Post}
 import gleam/json
+import gleam/list
 import wisp.{type Request, type Response}
 
 fn json_hello(req: Request) -> Response {
@@ -12,7 +13,7 @@ fn json_hello(req: Request) -> Response {
 
   case result {
     Ok(json) -> wisp.json_response(json, 201)
-    // Error(_) -> wisp.unprocessable_content()
+    //Error(_) -> wisp.unprocessable_content()
   }
 }
 
@@ -22,6 +23,19 @@ fn html_hello(_req: Request) -> Response {
   wisp.html_response(body, 200)
 }
 
+fn prueba_query(req: Request) -> Response {
+  req
+  |> wisp.get_query
+  |> echo
+  |> list.map(fn(x) {
+    let #(k, v) = x
+    #(k, json.string(v))
+  })
+  |> json.object
+  |> json.to_string
+  |> wisp.json_response(200)
+}
+
 pub fn handle_request(req: Request) -> Response {
   use _req <- web.middleware(req)
 
@@ -29,6 +43,8 @@ pub fn handle_request(req: Request) -> Response {
     [] -> html_hello(req)
 
     ["json"] -> json_hello(req)
+
+    ["prueba"] -> prueba_query(req)
 
     _ -> wisp.not_found()
   }
