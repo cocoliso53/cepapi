@@ -3,6 +3,7 @@ import app/cep_data
 import app/html_banxico_parser
 import app/web
 import gleam/http.{Get, Post}
+import gleam/httpc
 import gleam/json
 import gleam/list
 import wisp.{type Request, type Response}
@@ -84,8 +85,7 @@ fn prueba_banxico_conection(req: Request) -> Response {
     beneficiario: "646180537900000009",
     monto: "9200",
   )
-  |> banxico_io.get_html_cep_banxico
-  |> echo
+  |> banxico_io.get_html_cep_banxico(httpc.send)
   |> fn(x) {
     case x {
       Ok(s) -> wisp.html_response(s, 200)
