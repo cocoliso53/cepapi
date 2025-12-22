@@ -28,7 +28,10 @@ fn unwrap_response(
   resp: Result(response.Response(String), httpc.HttpError),
 ) -> Result(String, String) {
   case resp {
-    Ok(r) -> Ok(r.body)
+    Ok(r) if r.status >= 200 && r.status < 400 -> Ok(r.body)
+    Ok(r) if r.status >= 400 && r.status < 500 ->
+      Error("Banxico returned 400 error")
+    Ok(_) -> Error("Error procesing the request")
     Error(_) -> Error("Error procesing the request")
   }
 }

@@ -75,7 +75,7 @@ fn get_cep(req: Request) -> Response {
   }
 }
 
-fn prueba_banxico_conection(req: Request) -> Response {
+fn prueba_banxico_conection(_req: Request) -> Response {
   cep_data.UserCepData(
     tipo_criterio: "numeroReferencia",
     criterio: "161225",

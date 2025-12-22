@@ -4,7 +4,6 @@ import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/list
-import gleam/set
 import gleam/uri
 import gleeunit/should
 
