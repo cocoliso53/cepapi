@@ -1,5 +1,11 @@
 // Takes data from the user, parse it, and make it ready to send to banxico
+import gleam/dict
+import gleam/function
+import gleam/list
 import gleam/option
+import gleam/result
+import gleam/set
+import gleam/string
 
 // Data that comes from the user, ie the request
 // might be worhit to think of a better name
@@ -13,6 +19,67 @@ pub type UserCepData {
     beneficiario: String,
     monto: String,
   )
+}
+
+// TODO: implement real function
+fn format_fecha(fecha: String) -> String {
+  function.identity(fecha)
+}
+
+// TOOD: implement real function
+fn format_monto(monto: String) -> String {
+  function.identity(monto)
+}
+
+fn string_list_to_usercepdata(
+  params_list: List(#(String, String)),
+) -> UserCepData {
+  let params_dict = dict.from_list(params_list)
+  let get_param_value = fn(k) {
+    params_dict |> dict.get(k) |> result.unwrap("")
+  }
+  UserCepData(
+    tipo_criterio: "tipoCriterio" |> get_param_value,
+    criterio: "criterio" |> get_param_value,
+    emisor: "emisor" |> get_param_value,
+    receptor: "receptor" |> get_param_value,
+    fecha: "fecha" |> get_param_value |> format_fecha,
+    beneficiario: "beneficiario" |> get_param_value,
+    monto: "monto" |> get_param_value |> format_monto,
+  )
+}
+
+pub fn query_list_to_usercepdata(
+  query_list: List(#(String, String)),
+) -> Result(UserCepData, String) {
+  let required_keys =
+    set.from_list([
+      "tipoCriterio",
+      "criterio",
+      "emisor",
+      "receptor",
+      "fecha",
+      "beneficiario",
+      "monto",
+    ])
+
+  let present_keys =
+    query_list
+    |> list.map(fn(x) {
+      let #(k, _) = x
+      k
+    })
+    |> set.from_list
+
+  let missing_keys =
+    set.difference(required_keys, present_keys)
+    |> set.to_list
+    |> list.sort(by: string.compare)
+
+  case missing_keys {
+    [] -> Ok(string_list_to_usercepdata(query_list))
+    _ -> Error("Missing fields: " <> string.join(missing_keys, ", "))
+  }
 }
 
 pub fn institution_code_from_name(name: String) -> option.Option(String) {
@@ -123,8 +190,6 @@ pub fn tipo_criterio_code_from_name(criterio: String) -> option.Option(String) {
   }
 }
 
-/// The result of this function should be use to create 
-/// a query string  to send to banxico 
 pub fn cep_data_to_params_list(
   data: UserCepData,
 ) -> Result(List(#(String, String)), String) {
@@ -155,5 +220,20 @@ pub fn cep_data_to_params_list(
         // Tipo de consulta 0 -> html, 1 -> download file
         #("tipoConsulta", "0"),
       ])
+  }
+}
+
+/// The result of this function should be use to create 
+/// a query string  to send to banxico 
+pub fn query_list_to_banxico_params_list(
+  query_list: List(#(String, String)),
+) -> Result(List(#(String, String)), String) {
+  query_list
+  |> query_list_to_usercepdata
+  |> fn(x) {
+    case x {
+      Error(error) -> Error(error)
+      Ok(data) -> data |> cep_data_to_params_list
+    }
   }
 }
