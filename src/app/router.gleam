@@ -1,6 +1,9 @@
+import app/banxico_io
+import app/cep_data
 import app/html_banxico_parser
 import app/web
 import gleam/http.{Get, Post}
+import gleam/httpc
 import gleam/json
 import gleam/list
 import wisp.{type Request, type Response}
@@ -72,6 +75,25 @@ fn get_cep(req: Request) -> Response {
   }
 }
 
+fn prueba_banxico_conection(_req: Request) -> Response {
+  cep_data.UserCepData(
+    tipo_criterio: "numeroReferencia",
+    criterio: "161225",
+    emisor: "NUMEXICO",
+    receptor: "STP",
+    fecha: "16-12-2025",
+    beneficiario: "646180537900000009",
+    monto: "9200",
+  )
+  |> banxico_io.get_html_cep_banxico(httpc.send)
+  |> fn(x) {
+    case x {
+      Ok(s) -> wisp.html_response(s, 200)
+      Error(_) -> wisp.bad_request("Error feo")
+    }
+  }
+}
+
 pub fn handle_request(req: Request) -> Response {
   use _req <- web.middleware(req)
 
@@ -83,6 +105,8 @@ pub fn handle_request(req: Request) -> Response {
     ["cep"] -> get_cep(req)
 
     ["prueba"] -> prueba_query(req)
+
+    ["banxico"] -> prueba_banxico_conection(req)
 
     _ -> wisp.not_found()
   }

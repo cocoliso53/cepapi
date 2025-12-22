@@ -121,7 +121,7 @@ pub fn html_tuples_to_json_tuples(
 /// This should be the entrypoint function of this file
 /// html_string should be a string with 
 /// valid HTML content/page, else will
-/// return Error
+/// return Error, return json tuples tu be returned to client
 pub fn parse_html_to_json_tuple(
   html_string: String,
 ) -> Result(List(#(String, Json)), String) {

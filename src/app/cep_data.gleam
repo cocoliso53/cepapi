@@ -125,7 +125,7 @@ pub fn tipo_criterio_code_from_name(criterio: String) -> option.Option(String) {
 
 /// The result of this function should be use to create 
 /// a query string  to send to banxico 
-pub fn cep_data_json_to_list(
+pub fn cep_data_to_params_list(
   data: UserCepData,
 ) -> Result(List(#(String, String)), String) {
   // Try to asign values needed to hit banxico endpoint
@@ -151,6 +151,7 @@ pub fn cep_data_json_to_list(
         #("receptorParticipante", "0"),
         #("monto", data.monto),
         #("captcha", "c"),
+        #("criterio", data.criterio),
         // Tipo de consulta 0 -> html, 1 -> download file
         #("tipoConsulta", "0"),
       ])
