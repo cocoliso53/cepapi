@@ -2,6 +2,7 @@ import app/router
 import gleam/http.{Get}
 import gleam/uri
 import gleeunit/should
+import mock/mock_io
 import wisp
 import wisp/simulate
 
@@ -18,8 +19,11 @@ pub fn handle_request_get_cep_happy_parh_test() {
     ]
     |> uri.query_to_string
   let response =
-    router.handle_request(simulate.request(Get, "/cep?" <> query_string))
+    router.handle_request_with_sender(
+      simulate.request(Get, "/cep?" <> query_string),
+      mock_io.send,
+    )
 
-  //assert response.status == 200
+  should.equal(response.status, 200)
   should.equal(simulate.read_body(response), "")
 }

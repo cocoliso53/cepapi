@@ -64,6 +64,14 @@ fn get_cep(
 }
 
 pub fn handle_request(req: Request) -> Response {
+  handle_request_with_sender(req, httpc.send)
+}
+
+pub fn handle_request_with_sender(
+  req: Request,
+  send_fn: fn(request.Request(String)) ->
+    Result(response.Response(String), httpc.HttpError),
+) -> Response {
   use _req <- web.middleware(req)
 
   case wisp.path_segments(req) {
@@ -71,7 +79,7 @@ pub fn handle_request(req: Request) -> Response {
 
     ["json"] -> json_hello(req)
 
-    ["cep"] -> get_cep(req, httpc.send)
+    ["cep"] -> get_cep(req, send_fn)
 
     ["prueba"] -> prueba_query(req)
 
