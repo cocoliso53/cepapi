@@ -41,28 +41,24 @@ fn unwrap_response(
 /// we use send_fn to make tests easier to perform 
 /// by building a mock send function on the test file
 pub fn get_html_cep_banxico(
-  data: Result(List(#(String, String)), String),
+  data: List(#(String, String)),
   send_fn: fn(request.Request(String)) ->
     Result(response.Response(String), httpc.HttpError),
 ) -> Result(String, String) {
-  case data {
-    Error(s) -> Error(s)
-    Ok(d) ->
-      d
-      |> cep_data.query_list_to_banxico_params_list
-      |> fn(x) {
-        case x {
-          Ok(params) ->
-            params
-            |> make_banxico_request
-            |> fn(y) {
-              case y {
-                Ok(req) -> req |> send_fn |> unwrap_response
-                Error(error) -> Error(error)
-              }
-            }
-          Error(_) -> Error("Error making params list")
+  data
+  |> cep_data.query_list_to_banxico_params_list
+  |> fn(x) {
+    case x {
+      Ok(params) ->
+        params
+        |> make_banxico_request
+        |> fn(y) {
+          case y {
+            Ok(req) -> req |> send_fn |> unwrap_response
+            Error(error) -> Error(error)
+          }
         }
-      }
+      Error(_) -> Error("Error making params list")
+    }
   }
 }

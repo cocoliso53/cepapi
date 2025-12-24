@@ -1,4 +1,3 @@
-import app/cep_data
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc

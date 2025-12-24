@@ -32,7 +32,6 @@ fn html_hello(_req: Request) -> Response {
 fn prueba_query(req: Request) -> Response {
   req
   |> wisp.get_query
-  |> echo
   |> list.map(fn(x) {
     let #(k, v) = x
     #(k, json.string(v))
@@ -50,7 +49,6 @@ fn get_cep(
   use <- wisp.require_method(req, Get)
   req
   |> wisp.get_query
-  |> cep_data.query_list_to_banxico_params_list
   |> banxico_io.get_html_cep_banxico(send_fn)
   |> html_banxico_parser.parse_html_to_json_tuple
   |> fn(x) {
