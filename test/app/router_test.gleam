@@ -3,7 +3,6 @@ import gleam/http.{Get}
 import gleam/uri
 import gleeunit/should
 import mock/mock_io
-import wisp
 import wisp/simulate
 
 pub fn handle_request_get_cep_happy_parh_test() {
@@ -25,5 +24,8 @@ pub fn handle_request_get_cep_happy_parh_test() {
     )
 
   should.equal(response.status, 200)
-  should.equal(simulate.read_body(response), "")
+  should.equal(
+    simulate.read_body(response),
+    "{\"numeroReferencia\":\"161225\",\"claveRastreo\":\"NU3986LEURU487V8N1SLMDB8FM8O\",\"institucionEmisora\":\"NU MEXICO\",\"institucionReceptora\":\"STP\",\"estadoBanxico\":\"Liquidado\",\"fechaRecepcion\":\"16/12/2025 12:54:42\",\"fechaProcesamiento\":\"16/12/2025 12:54:42\",\"cuentaBeneficiaria\":\"646180537900000009\",\"monto\":\"9200.00\"}",
+  )
 }

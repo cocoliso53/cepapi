@@ -36,7 +36,6 @@ fn valid_query_string(query: String) -> Bool {
 pub fn send(
   req: request.Request(String),
 ) -> Result(response.Response(String), httpc.HttpError) {
-  echo req.body
   let valid_params = valid_query_string(req.body)
   let full_html_response =
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no\" />\n
