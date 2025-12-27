@@ -1,13 +1,11 @@
 import app/banxico_io
-import app/cep_data
 import app/html_banxico_parser
 import app/web
-import gleam/http.{Get, Post}
+import gleam/http.{Get}
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/json
-import gleam/list
 import wisp.{type Request, type Response}
 
 fn json_hello(req: Request) -> Response {
@@ -27,18 +25,6 @@ fn html_hello(_req: Request) -> Response {
   let body = "<h1>Hello, Joe!</h1>"
 
   wisp.html_response(body, 200)
-}
-
-fn prueba_query(req: Request) -> Response {
-  req
-  |> wisp.get_query
-  |> list.map(fn(x) {
-    let #(k, v) = x
-    #(k, json.string(v))
-  })
-  |> json.object
-  |> json.to_string
-  |> wisp.json_response(200)
 }
 
 fn get_cep(
@@ -80,8 +66,6 @@ pub fn handle_request_with_sender(
     ["json"] -> json_hello(req)
 
     ["cep"] -> get_cep(req, send_fn)
-
-    ["prueba"] -> prueba_query(req)
 
     _ -> wisp.not_found()
   }
