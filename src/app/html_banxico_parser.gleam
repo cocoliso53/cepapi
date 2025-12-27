@@ -123,15 +123,19 @@ pub fn html_tuples_to_json_tuples(
 /// valid HTML content/page, else will
 /// return Error, return json tuples tu be returned to client
 pub fn parse_html_to_json_tuple(
-  html_string: String,
+  html_string: Result(String, String),
 ) -> Result(List(#(String, Json)), String) {
-  html_string
-  |> html_parser.as_list
-  |> find_content
-  |> fn(x) {
-    case x {
-      [] -> Error("HTML not formated as expected " <> html_string)
-      _ -> html_tuples_to_json_tuples(x)
-    }
+  case html_string {
+    Error(e) -> Error(e)
+    Ok(html) ->
+      html
+      |> html_parser.as_list
+      |> find_content
+      |> fn(x) {
+        case x {
+          [] -> Error("HTML not formated as expected " <> html)
+          _ -> html_tuples_to_json_tuples(x)
+        }
+      }
   }
 }
