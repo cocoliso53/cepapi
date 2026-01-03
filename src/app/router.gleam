@@ -1,7 +1,7 @@
 import app/banxico_io
 import app/html_banxico_parser
 import app/web
-import gleam/http.{Get}
+import gleam/http.{Get, Post}
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
@@ -60,6 +60,41 @@ fn get_cep(
         |> wisp.json_response(200)
       Error(error) -> wisp.bad_request(error)
     }
+  }
+}
+
+fn token_to_json_string_body(token: String) -> String {
+  let json_list_params = [
+    #("token", json.string(token)),
+    #("session_duration_minutes", json.int(60)),
+  ]
+
+  json_list_params
+  |> json.object
+  |> json.to_string
+}
+
+fn stytch_token_auth(token: String) -> Response {
+  let base_req = request.to("https://test.stytch.com/v1/oauth/authenticate")
+
+  case base_req {
+    Ok(req) ->
+      req
+      |> request.set_header("Content-Type", "application/json")
+      |> request.set_header(
+        "Authorization",
+        "Basic " <> "UFJPSkVDVF9JRDpTRUNSRVQ=",
+      )
+      |> request.set_method(Post)
+      |> request.set_body(token_to_json_string_body(token))
+      |> httpc.send
+      |> fn(x) {
+        case x {
+          Ok(resp) -> wisp.html_response(resp.body, 200)
+          Error(_) -> wisp.html_response("error", 400)
+        }
+      }
+    Error(_) -> wisp.html_response("error", 400)
   }
 }
 
