@@ -6,6 +6,7 @@ import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/json
+import gleam/list
 import wisp.{type Request, type Response}
 
 fn json_hello(req: Request) -> Response {
@@ -22,7 +23,20 @@ fn json_hello(req: Request) -> Response {
 }
 
 fn html_hello(_req: Request) -> Response {
-  let body = "<h1>Hello, Joe!</h1>"
+  let body =
+    "<!doctype html>\n"
+    <> "<html lang=\"en\">\n"
+    <> "<head>\n"
+    <> "  <meta charset=\"utf-8\">\n"
+    <> "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+    <> "  <title>Welcome</title>\n"
+    <> "</head>\n"
+    <> "<body>\n"
+    <> "  <h1>Welcome</h1>\n"
+    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token=PUBLIC_TOKEN&login_redirect_url={login_redirect_url}&signup_redirect_url={signup_redirect_url}\">Login</a>\n"
+    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token=PUBLIC_TOKEN&login_redirect_url={login_redirect_url}&signup_redirect_url={signup_redirect_url}\">Register</a>\n"
+    <> "</body>\n"
+    <> "</html>\n"
 
   wisp.html_response(body, 200)
 }
@@ -49,6 +63,20 @@ fn get_cep(
   }
 }
 
+pub fn post_oauth_authenticate(req: Request) -> Response {
+  use <- wisp.require_method(req, Get)
+  req
+  |> wisp.get_query
+  |> list.key_find("token")
+  |> fn(x) {
+    case x {
+      Ok(v) -> "<h1>" <> v <> "</h1>"
+      _ -> "<h1> error <h1>"
+    }
+  }
+  |> wisp.html_response(200)
+}
+
 pub fn handle_request(req: Request) -> Response {
   handle_request_with_sender(req, httpc.send)
 }
@@ -66,6 +94,8 @@ pub fn handle_request_with_sender(
     ["json"] -> json_hello(req)
 
     ["cep"] -> get_cep(req, send_fn)
+
+    ["auth"] -> post_oauth_authenticate(req)
 
     _ -> wisp.not_found()
   }
