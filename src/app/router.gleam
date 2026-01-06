@@ -1,6 +1,7 @@
 import app/banxico_io
 import app/html_banxico_parser
 import app/web
+import envoy
 import gleam/http.{Get, Post}
 import gleam/http/request
 import gleam/http/response
@@ -23,6 +24,8 @@ fn json_hello(req: Request) -> Response {
 }
 
 fn html_hello(_req: Request) -> Response {
+  let assert Ok(pub_token) = envoy.get("PUBLIC_TOKEN")
+
   let body =
     "<!doctype html>\n"
     <> "<html lang=\"en\">\n"
@@ -33,8 +36,12 @@ fn html_hello(_req: Request) -> Response {
     <> "</head>\n"
     <> "<body>\n"
     <> "  <h1>Welcome</h1>\n"
-    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token=PUBLIC_TOKEN&login_redirect_url={login_redirect_url}&signup_redirect_url={signup_redirect_url}\">Login</a>\n"
-    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token=PUBLIC_TOKEN&login_redirect_url={login_redirect_url}&signup_redirect_url={signup_redirect_url}\">Register</a>\n"
+    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token="
+    <> pub_token
+    <> "&login_redirect_url=http://127.0.0.1:8000/auth&signup_redirect_url=http://127.0.0.1:8000/auth\">Login</a>\n"
+    <> "  <a href=\"https://test.stytch.com/v1/public/oauth/google/start?public_token=p"
+    <> pub_token
+    <> "&login_redirect_url=http://127.0.0.1:8000/auth&signup_redirect_url=http://127.0.0.1:8000/auth\">Register</a>\n"
     <> "</body>\n"
     <> "</html>\n"
 
@@ -76,15 +83,13 @@ fn token_to_json_string_body(token: String) -> String {
 
 fn stytch_token_auth(token: String) -> Response {
   let base_req = request.to("https://test.stytch.com/v1/oauth/authenticate")
+  let assert Ok(auth_token) = envoy.get("AUTH_TOKEN")
 
   case base_req {
     Ok(req) ->
       req
       |> request.set_header("Content-Type", "application/json")
-      |> request.set_header(
-        "Authorization",
-        "Basic " <> "UFJPSkVDVF9JRDpTRUNSRVQ=",
-      )
+      |> request.set_header("Authorization", "Basic " <> auth_token)
       |> request.set_method(Post)
       |> request.set_body(token_to_json_string_body(token))
       |> httpc.send
@@ -105,11 +110,10 @@ pub fn post_oauth_authenticate(req: Request) -> Response {
   |> list.key_find("token")
   |> fn(x) {
     case x {
-      Ok(v) -> "<h1>" <> v <> "</h1>"
-      _ -> "<h1> error <h1>"
+      Ok(v) -> stytch_token_auth(v)
+      _ -> wisp.html_response("<h1> error <h1>", 400)
     }
   }
-  |> wisp.html_response(200)
 }
 
 pub fn handle_request(req: Request) -> Response {
