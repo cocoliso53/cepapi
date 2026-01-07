@@ -23,7 +23,7 @@ fn json_hello(req: Request) -> Response {
   }
 }
 
-fn html_hello(_req: Request) -> Response {
+fn html_hello(req: Request) -> Response {
   let assert Ok(pub_token) = envoy.get("PUBLIC_TOKEN")
 
   let body =
@@ -46,6 +46,7 @@ fn html_hello(_req: Request) -> Response {
     <> "</html>\n"
 
   wisp.html_response(body, 200)
+  |> wisp.set_cookie(req, "prueba", "ABC123", wisp.Signed, 60 * 5)
 }
 
 fn get_cep(
