@@ -79,3 +79,13 @@ pub type User {
     status: Status,
   )
 }
+
+pub type AuthResponse {
+  AuthResponse(
+    status_code: Int,
+    request_id: String,
+    user: User,
+    session_token: String,
+    session_jwt: String,
+  )
+}
