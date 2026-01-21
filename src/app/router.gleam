@@ -27,7 +27,7 @@ fn json_hello(req: Request) -> Response {
   }
 }
 
-fn html_hello(req: Request) -> Response {
+fn html_hello(_req: Request) -> Response {
   let assert Ok(pub_token) = envoy.get("PUBLIC_TOKEN")
 
   let body =
