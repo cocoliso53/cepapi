@@ -1,5 +1,6 @@
 import gleam/dynamic
 import gleam/dynamic/decode
+import gleam/json
 import gleam/option
 import gleeunit/should
 import stytch/codec
@@ -49,10 +50,7 @@ fn sample_user_dynamic() -> dynamic.Dynamic {
     #(dynamic.string("biometric_registrations"), dynamic.list([])),
     #(dynamic.string("totps"), dynamic.list([])),
     #(dynamic.string("password"), dynamic.nil()),
-    #(
-      dynamic.string("roles"),
-      dynamic.list([dynamic.string("stytch_user")]),
-    ),
+    #(dynamic.string("roles"), dynamic.list([dynamic.string("stytch_user")])),
     #(dynamic.string("created_at"), dynamic.string("2026-01-05T23:58:08Z")),
     #(dynamic.string("status"), dynamic.string("active")),
   ])
@@ -152,4 +150,14 @@ pub fn status_decoder_invalid_value_test() {
   let response_dyn = dynamic.string("unknown")
 
   should.be_error(decode.run(response_dyn, codec.status_decoder()))
+}
+
+pub fn auth_response_decoder_real_data_test() {
+  let response_dyn =
+    json.parse(
+      "{\"status_code\":200,\"request_id\":\"request-id-test-123\",\"session_token\":\"session-token-test-123\",\"session_jwt\":\"session-jwt-test-123\",\"user\":{\"user_id\":\"user-test-123\",\"name\":{\"first_name\":\"Test\",\"middle_name\":\"\",\"last_name\":\"User\"},\"emails\":[{\"email\":\"user@example.com\",\"email_id\":\"email-test-123\",\"verified\":true}],\"phone_numbers\":[],\"providers\":[{\"locale\":\"\",\"oauth_user_registration_id\":\"oauth-user-test-123\",\"profile_picture_url\":\"https://example.com/avatar.png\",\"provider_subject\":\"subject-123\",\"provider_type\":\"Google\"}],\"roles\":[\"stytch_user\"],\"status\":\"active\",\"created_at\":\"2026-01-05T23:58:08Z\",\"webauthn_registrations\":[],\"biometric_registrations\":[],\"totps\":[],\"password\":null}}",
+      codec.auth_response_decoder(),
+    )
+
+  should.be_ok(response_dyn)
 }

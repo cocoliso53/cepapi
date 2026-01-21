@@ -50,7 +50,6 @@ fn html_hello(req: Request) -> Response {
     <> "</html>\n"
 
   wisp.html_response(body, 200)
-  |> wisp.set_cookie(req, "prueba", "ABC123", wisp.Signed, 60 * 5)
 }
 
 fn get_cep(
@@ -102,8 +101,7 @@ fn stytch_token_auth(req: Request, token: String) -> Response {
         case x {
           Ok(resp) -> {
             resp.body
-            |> dynamic.string
-            |> decode.run(codec.auth_response_decoder())
+            |> json.parse(codec.auth_response_decoder())
             |> fn(y) {
               case y {
                 Ok(t) -> {
@@ -114,7 +112,7 @@ fn stytch_token_auth(req: Request, token: String) -> Response {
                   |> wisp.html_response(200)
                   |> wisp.set_cookie(
                     req,
-                    "seesion_jwt",
+                    "session_jwt",
                     session,
                     wisp.Signed,
                     60 * 10,
