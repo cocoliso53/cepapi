@@ -1,3 +1,4 @@
+import gleam/httpc
 import gleam/option
 
 pub type UserName {
@@ -86,6 +87,14 @@ pub type AuthResponse {
     request_id: String,
     user: User,
     session_token: String,
-    session_jwt: String,
+    session_jwt: SessionJWT,
   )
 }
+
+pub type ClientError {
+  HttpError(httpc.HttpError)
+  ElseError(String)
+}
+
+pub type SessionJWT =
+  String

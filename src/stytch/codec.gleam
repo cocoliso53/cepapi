@@ -1,6 +1,16 @@
+import gleam/dynamic
 import gleam/dynamic/decode
 import gleam/string
 import stytch/data
+
+pub fn decode_error_to_string(error: decode.DecodeError) -> String {
+  "Decode error. Expected: "
+  <> error.expected
+  <> " Found: "
+  <> error.found
+  <> " Path: "
+  <> string.join(error.path, ", ")
+}
 
 pub fn user_name_decoder() -> decode.Decoder(data.UserName) {
   use first_name <- decode.field("first_name", decode.optional(decode.string))
@@ -24,52 +34,57 @@ pub fn phone_number_decoder() -> decode.Decoder(data.PhoneNumber) {
 }
 
 pub fn provider_decoder() -> decode.Decoder(data.Provider) {
-  use oauth_user_registration_id <-
-    decode.field("oauth_user_registration_id", decode.string)
+  use oauth_user_registration_id <- decode.field(
+    "oauth_user_registration_id",
+    decode.string,
+  )
   use provider_subject <- decode.field("provider_subject", decode.string)
   use provider_type <- decode.field("provider_type", decode.string)
   use profile_picture_url <- decode.field("profile_picture_url", decode.string)
   use locale <- decode.field("locale", decode.string)
-  decode.success(
-    data.Provider(
-      oauth_user_registration_id:,
-      provider_subject:,
-      provider_type:,
-      profile_picture_url:,
-      locale:,
-    ),
-  )
+  decode.success(data.Provider(
+    oauth_user_registration_id:,
+    provider_subject:,
+    provider_type:,
+    profile_picture_url:,
+    locale:,
+  ))
 }
 
-pub fn webauthn_registration_decoder() -> decode.Decoder(data.WebauthnRegistration) {
-  use webauthn_registration_id <-
-    decode.field("webauthn_registration_id", decode.string)
+pub fn webauthn_registration_decoder() -> decode.Decoder(
+  data.WebauthnRegistration,
+) {
+  use webauthn_registration_id <- decode.field(
+    "webauthn_registration_id",
+    decode.string,
+  )
   use domain <- decode.field("domain", decode.string)
   use user_agent <- decode.field("user_agent", decode.string)
   use authenticator_type <- decode.field("authenticator_type", decode.string)
   use verified <- decode.field("verified", decode.bool)
   use name <- decode.field("name", decode.string)
-  decode.success(
-    data.WebauthnRegistration(
-      webauthn_registration_id:,
-      domain:,
-      user_agent:,
-      authenticator_type:,
-      verified:,
-      name:,
-    ),
-  )
+  decode.success(data.WebauthnRegistration(
+    webauthn_registration_id:,
+    domain:,
+    user_agent:,
+    authenticator_type:,
+    verified:,
+    name:,
+  ))
 }
 
 pub fn biometric_registration_decoder() -> decode.Decoder(
   data.BiometricRegistration,
 ) {
-  use biometric_registration_id <-
-    decode.field("biometric_registration_id", decode.string)
-  use verified <- decode.field("verified", decode.bool)
-  decode.success(
-    data.BiometricRegistration(biometric_registration_id:, verified:),
+  use biometric_registration_id <- decode.field(
+    "biometric_registration_id",
+    decode.string,
   )
+  use verified <- decode.field("verified", decode.bool)
+  decode.success(data.BiometricRegistration(
+    biometric_registration_id:,
+    verified:,
+  ))
 }
 
 pub fn totp_decoder() -> decode.Decoder(data.Totp) {
@@ -80,17 +95,18 @@ pub fn totp_decoder() -> decode.Decoder(data.Totp) {
 
 pub fn crypto_wallet_decoder() -> decode.Decoder(data.CryptoWallet) {
   use crypto_wallet_id <- decode.field("crypto_wallet_id", decode.string)
-  use crypto_wallet_address <- decode.field("crypto_wallet_address", decode.string)
+  use crypto_wallet_address <- decode.field(
+    "crypto_wallet_address",
+    decode.string,
+  )
   use crypto_wallet_type <- decode.field("crypto_wallet_type", decode.string)
   use verified <- decode.field("verified", decode.bool)
-  decode.success(
-    data.CryptoWallet(
-      crypto_wallet_id:,
-      crypto_wallet_address:,
-      crypto_wallet_type:,
-      verified:,
-    ),
-  )
+  decode.success(data.CryptoWallet(
+    crypto_wallet_id:,
+    crypto_wallet_address:,
+    crypto_wallet_type:,
+    verified:,
+  ))
 }
 
 pub fn password_decoder() -> decode.Decoder(data.Password) {
@@ -114,33 +130,38 @@ pub fn user_decoder() -> decode.Decoder(data.User) {
   use user_id <- decode.field("user_id", decode.string)
   use name <- decode.field("name", user_name_decoder())
   use emails <- decode.field("emails", decode.list(email_decoder()))
-  use phone_numbers <- decode.field("phone_numbers", decode.list(phone_number_decoder()))
+  use phone_numbers <- decode.field(
+    "phone_numbers",
+    decode.list(phone_number_decoder()),
+  )
   use providers <- decode.field("providers", decode.list(provider_decoder()))
-  use webauthn_registrations <-
-    decode.field("webauthn_registrations", decode.list(webauthn_registration_decoder()))
-  use biometric_registrations <-
-    decode.field("biometric_registrations", decode.list(biometric_registration_decoder()))
+  use webauthn_registrations <- decode.field(
+    "webauthn_registrations",
+    decode.list(webauthn_registration_decoder()),
+  )
+  use biometric_registrations <- decode.field(
+    "biometric_registrations",
+    decode.list(biometric_registration_decoder()),
+  )
   use totps <- decode.field("totps", decode.list(totp_decoder()))
   use password <- decode.field("password", decode.optional(password_decoder()))
   use roles <- decode.field("roles", decode.list(decode.string))
   use created_at <- decode.field("created_at", decode.string)
   use status <- decode.field("status", status_decoder())
-  decode.success(
-    data.User(
-      user_id:,
-      name:,
-      emails:,
-      phone_numbers:,
-      providers:,
-      webauthn_registrations:,
-      biometric_registrations:,
-      totps:,
-      password:,
-      roles:,
-      created_at:,
-      status:,
-    ),
-  )
+  decode.success(data.User(
+    user_id:,
+    name:,
+    emails:,
+    phone_numbers:,
+    providers:,
+    webauthn_registrations:,
+    biometric_registrations:,
+    totps:,
+    password:,
+    roles:,
+    created_at:,
+    status:,
+  ))
 }
 
 pub fn auth_response_decoder() -> decode.Decoder(data.AuthResponse) {
