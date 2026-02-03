@@ -4,12 +4,8 @@ import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/json
+import stytch/data
 import wisp.{type Request}
-
-pub type ClientError {
-  HttpError(httpc.HttpError)
-  ElseError(String)
-}
 
 fn token_to_json_string_body(token: String) -> String {
   let json_list_params = [
@@ -26,7 +22,7 @@ pub fn stytch_token_auth(
   send_fn: fn(request.Request(String)) ->
     Result(response.Response(String), httpc.HttpError),
   token: String,
-) -> Result(response.Response(String), ClientError) {
+) -> Result(response.Response(String), data.ClientError) {
   let base_req = request.to("https://test.stytch.com/v1/oauth/authenticate")
   let assert Ok(auth_token) = envoy.get("AUTH_TOKEN")
 
@@ -41,9 +37,9 @@ pub fn stytch_token_auth(
       |> fn(x) {
         case x {
           Ok(result) -> Ok(result)
-          Error(error) -> Error(HttpError(error))
+          Error(error) -> Error(data.HttpError(error))
         }
       }
-    Error(_) -> Error(ElseError("Something went wrong with base_req"))
+    Error(_) -> Error(data.ElseError("Something went wrong with base_req"))
   }
 }

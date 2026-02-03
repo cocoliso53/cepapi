@@ -10,7 +10,10 @@ import gleam/http/response
 import gleam/httpc
 import gleam/json
 import gleam/list
+import stytch/client
 import stytch/codec
+import stytch/service
+import stytch/transport
 import views/user_page
 import wisp.{type Request, type Response}
 
@@ -74,62 +77,6 @@ fn get_cep(
   }
 }
 
-fn token_to_json_string_body(token: String) -> String {
-  let json_list_params = [
-    #("token", json.string(token)),
-    #("session_duration_minutes", json.int(60)),
-  ]
-
-  json_list_params
-  |> json.object
-  |> json.to_string
-}
-
-fn stytch_token_auth(req: Request, token: String) -> Response {
-  let base_req = request.to("https://test.stytch.com/v1/oauth/authenticate")
-  let assert Ok(auth_token) = envoy.get("AUTH_TOKEN")
-
-  case base_req {
-    Ok(r) ->
-      r
-      |> request.set_header("Content-Type", "application/json")
-      |> request.set_header("Authorization", "Basic " <> auth_token)
-      |> request.set_method(Post)
-      |> request.set_body(token_to_json_string_body(token))
-      |> httpc.send
-      |> fn(x) {
-        case x {
-          Ok(resp) -> {
-            resp.body
-            |> json.parse(codec.auth_response_decoder())
-            |> fn(y) {
-              case y {
-                Ok(t) -> {
-                  let session = t.session_jwt
-                  let user = t.user
-
-                  user_page.user_profile_page(user)
-                  |> wisp.html_response(200)
-                  |> wisp.set_cookie(
-                    req,
-                    "session_jwt",
-                    session,
-                    wisp.Signed,
-                    60 * 10,
-                  )
-                }
-
-                Error(_) -> wisp.html_response("error al obtener usuario", 400)
-              }
-            }
-          }
-          Error(_) -> wisp.html_response("error", 400)
-        }
-      }
-    Error(_) -> wisp.html_response("error", 400)
-  }
-}
-
 pub fn post_oauth_authenticate(req: Request) -> Response {
   use <- wisp.require_method(req, Get)
   req
@@ -137,7 +84,10 @@ pub fn post_oauth_authenticate(req: Request) -> Response {
   |> list.key_find("token")
   |> fn(x) {
     case x {
-      Ok(v) -> stytch_token_auth(req, v)
+      Ok(v) ->
+        client.stytch_token_auth(httpc.send, v)
+        |> service.get_user_and_token
+        |> transport.user_dashboard_response(req)
       Error(_) -> wisp.html_response("<h1> error <h1>", 400)
     }
   }

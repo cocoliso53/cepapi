@@ -25,7 +25,7 @@ gleam test  # Run the tests
 
 ## Project Structure
 
-- `module/request` builds request payloads/URLs and remains pure.
+- `module/transport` builds request payloads/URLs and remains pure.
 - `module/codec` owns JSON decoding/encoding for API data.
 - `module/client` handles HTTP calls and returns raw/decoded data.
 - `module/service` orchestrates client + codec and exposes domain-focused results.
