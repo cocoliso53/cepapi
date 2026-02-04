@@ -39,6 +39,25 @@ pub fn user_profile_page(user: data.User) -> String {
   <> "  <p>Email: "
   <> email
   <> "</p>\n"
+  <> "  <a href=\"/user/subscription"
+  <> "\">Subscritions</a>\n"
+  <> "</body>\n"
+  <> "</html>\n"
+}
+
+pub fn suscriptions_page(token: String) -> String {
+  "<!doctype html>\n"
+  <> "<html lang=\"en\">\n"
+  <> "<head>\n"
+  <> "  <meta charset=\"utf-8\">\n"
+  <> "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+  <> "  <title>Suscriptions</title>\n"
+  <> "</head>\n"
+  <> "<body>\n"
+  <> "  <h1>Suscriptions</h1>\n"
+  <> "  <p>Token: "
+  <> token
+  <> "</p>\n"
   <> "</body>\n"
   <> "</html>\n"
 }

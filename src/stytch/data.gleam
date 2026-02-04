@@ -86,7 +86,7 @@ pub type AuthResponse {
     status_code: Int,
     request_id: String,
     user: User,
-    session_token: String,
+    session_token: SessionToken,
     session_jwt: SessionJWT,
   )
 }
@@ -97,4 +97,7 @@ pub type ClientError {
 }
 
 pub type SessionJWT =
+  String
+
+pub type SessionToken =
   String

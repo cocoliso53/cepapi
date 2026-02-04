@@ -38,7 +38,7 @@ pub fn user_dashboard_response_happy_path_test() {
   let req = simulate.request(http.Get, "/")
   let response =
     transport.user_dashboard_response(
-      Ok(#(sample_user(), "session-jwt-test-123")),
+      Ok(#(sample_user(), "session-token-test-123")),
       req,
     )
 

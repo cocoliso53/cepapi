@@ -17,9 +17,9 @@ fn json_decode_errors_to_string(decode_error: json.DecodeError) -> String {
 
 fn extract_user_and_token_from_parsed_data(
   res: Result(data.AuthResponse, json.DecodeError),
-) -> Result(#(data.User, data.SessionJWT), String) {
+) -> Result(#(data.User, data.SessionToken), String) {
   case res {
-    Ok(t) -> Ok(#(t.user, t.session_jwt))
+    Ok(t) -> Ok(#(t.user, t.session_token))
     Error(e) -> e |> json_decode_errors_to_string |> Error
   }
 }
@@ -31,7 +31,7 @@ fn extract_user_and_token_from_parsed_data(
 // for more details on the structrure of the response
 pub fn get_user_and_token(
   res: Result(response.Response(String), data.ClientError),
-) -> Result(#(data.User, data.SessionJWT), String) {
+) -> Result(#(data.User, data.SessionToken), String) {
   case res {
     Ok(resp) -> {
       resp.body

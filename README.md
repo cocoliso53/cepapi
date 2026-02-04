@@ -32,3 +32,7 @@ gleam test  # Run the tests
 - `module/data` contains types definitions 
 - `app/router` adapts requests/responses and stays thin (no business logic).
 - `views` contains HTML string builders for rendering pages.
+
+
+## TODO
+- Better, consistent enpoint namings

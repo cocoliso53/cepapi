@@ -3,7 +3,7 @@ import views/user_page
 import wisp.{type Request, type Response}
 
 pub fn user_dashboard_response(
-  res: Result(#(data.User, data.SessionJWT), String),
+  res: Result(#(data.User, data.SessionToken), String),
   req: Request,
 ) -> Response {
   case res {
@@ -12,7 +12,7 @@ pub fn user_dashboard_response(
       |> wisp.html_response(200)
       |> wisp.set_cookie(
         req,
-        "session_jwt",
+        "session_token",
         session_token,
         wisp.Signed,
         60 * 10,

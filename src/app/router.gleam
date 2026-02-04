@@ -93,6 +93,19 @@ pub fn post_oauth_authenticate(req: Request) -> Response {
   }
 }
 
+pub fn user_subscription_page(req: Request) -> Response {
+  use <- wisp.require_method(req, Get)
+  req
+  |> wisp.get_cookie("session_token", wisp.Signed)
+  |> fn(x) {
+    case x {
+      Ok(cookie) ->
+        user_page.suscriptions_page(cookie) |> wisp.html_response(200)
+      Error(_) -> wisp.html_response("Error aquí", 400)
+    }
+  }
+}
+
 pub fn handle_request(req: Request) -> Response {
   handle_request_with_sender(req, httpc.send)
 }
@@ -112,6 +125,8 @@ pub fn handle_request_with_sender(
     ["cep"] -> get_cep(req, send_fn)
 
     ["auth"] -> post_oauth_authenticate(req)
+
+    ["user", "subscription"] -> user_subscription_page(req)
 
     _ -> wisp.not_found()
   }
