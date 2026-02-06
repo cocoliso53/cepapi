@@ -1,5 +1,7 @@
+import gleam/dict
 import gleam/dynamic
 import gleam/dynamic/decode
+import gleam/option
 import gleam/string
 import stytch/data
 
@@ -162,6 +164,118 @@ pub fn user_decoder() -> decode.Decoder(data.User) {
     created_at:,
     status:,
   ))
+}
+
+pub fn session_attributes_decoder() -> decode.Decoder(data.SessionAttributes) {
+  use ip_address <- decode.field("ip_address", decode.string)
+  use user_agent <- decode.field("user_agent", decode.string)
+  decode.success(data.SessionAttributes(ip_address:, user_agent:))
+}
+
+pub fn email_factor_decoder() -> decode.Decoder(data.EmailFactor) {
+  use email_address <- decode.field("email_address", decode.string)
+  use email_id <- decode.field("email_id", decode.string)
+  decode.success(data.EmailFactor(email_address:, email_id:))
+}
+
+pub fn authentication_factor_decoder() -> decode.Decoder(
+  data.AuthenticationFactor,
+) {
+  use created_at <- decode.field("created_at", decode.string)
+  use delivery_method <- decode.field("delivery_method", decode.string)
+  use email_factor <-
+    decode.optional_field(
+      "email_factor",
+      option.None,
+      decode.optional(email_factor_decoder()),
+    )
+  use last_authenticated_at <- decode.field(
+    "last_authenticated_at",
+    decode.string,
+  )
+  use updated_at <- decode.field("updated_at", decode.string)
+  use factor_type <- decode.field("type", decode.string)
+  decode.success(
+    data.AuthenticationFactor(
+      created_at:,
+      delivery_method:,
+      email_factor:,
+      last_authenticated_at:,
+      updated_at:,
+      factor_type:,
+    ),
+  )
+}
+
+fn custom_claims_decoder() -> decode.Decoder(List(#(String, String))) {
+  decode.dict(decode.string, decode.string)
+  |> decode.map(dict.to_list)
+}
+
+pub fn session_decoder() -> decode.Decoder(data.Session) {
+  use attributes <- decode.field("attributes", session_attributes_decoder())
+  use authentication_factors <-
+    decode.field(
+      "authentication_factors",
+      decode.list(authentication_factor_decoder()),
+    )
+  use custom_claims <- decode.field("custom_claims", custom_claims_decoder())
+  use expires_at <- decode.field("expires_at", decode.string)
+  use last_accessed_at <- decode.field("last_accessed_at", decode.string)
+  use started_at <- decode.field("started_at", decode.string)
+  use session_id <- decode.field("session_id", decode.string)
+  use user_id <- decode.field("user_id", decode.string)
+  decode.success(
+    data.Session(
+      attributes:,
+      authentication_factors:,
+      custom_claims:,
+      expires_at:,
+      last_accessed_at:,
+      started_at:,
+      session_id:,
+      user_id:,
+    ),
+  )
+}
+
+pub fn session_response_decoder() -> decode.Decoder(data.SessionResponse) {
+  use session <- decode.field("session", session_decoder())
+  decode.success(data.SessionResponse(session:))
+}
+
+pub fn verdict_decoder() -> decode.Decoder(data.Verdict) {
+  use authorized <- decode.field("authorized", decode.bool)
+  use granting_roles <- decode.field("granting_roles", decode.list(decode.string))
+  decode.success(data.Verdict(authorized:, granting_roles:))
+}
+
+pub fn session_auth_response_decoder() -> decode.Decoder(
+  data.SessionAuthResponse,
+) {
+  use status_code <- decode.field("status_code", decode.int)
+  use request_id <- decode.field("request_id", decode.string)
+  use session <- decode.field("session", session_decoder())
+  use session_jwt <- decode.field("session_jwt", decode.string)
+  use session_token <- decode.field("session_token", decode.string)
+  use user <- decode.field("user", user_decoder())
+  use verdict <-
+    decode.optional_field(
+      "verdict",
+      option.None,
+      decode.optional(verdict_decoder()),
+    )
+  decode.success(
+    data.SessionAuthResponse(
+      status_code:,
+      request_id:,
+      session:,
+      session_jwt:,
+      session_token:,
+      user:,
+      verdict:,
+    ),
+  )
 }
 
 pub fn auth_response_decoder() -> decode.Decoder(data.AuthResponse) {

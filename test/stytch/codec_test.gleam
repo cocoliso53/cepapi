@@ -6,6 +6,102 @@ import gleeunit/should
 import stytch/codec
 import stytch/data
 
+fn sample_session_dynamic() -> dynamic.Dynamic {
+  dynamic.properties([
+    #(
+      dynamic.string("attributes"),
+      dynamic.properties([
+        #(dynamic.string("ip_address"), dynamic.string("")),
+        #(dynamic.string("user_agent"), dynamic.string("")),
+      ]),
+    ),
+    #(
+      dynamic.string("authentication_factors"),
+      dynamic.list([
+        dynamic.properties([
+          #(dynamic.string("created_at"), dynamic.string("2025-01-09T07:41:52Z")),
+          #(dynamic.string("delivery_method"), dynamic.string("email")),
+          #(
+            dynamic.string("email_factor"),
+            dynamic.properties([
+              #(
+                dynamic.string("email_address"),
+                dynamic.string("sandbox@stytch.com"),
+              ),
+              #(dynamic.string("email_id"), dynamic.string("email-test-123")),
+            ]),
+          ),
+          #(
+            dynamic.string("last_authenticated_at"),
+            dynamic.string("2025-01-09T07:41:52Z"),
+          ),
+          #(dynamic.string("updated_at"), dynamic.string("2025-01-09T07:41:52Z")),
+          #(dynamic.string("type"), dynamic.string("magic_link")),
+        ]),
+        dynamic.properties([
+          #(dynamic.string("created_at"), dynamic.string("2025-01-09T08:41:52Z")),
+          #(dynamic.string("delivery_method"), dynamic.string("knowledge")),
+          #(
+            dynamic.string("last_authenticated_at"),
+            dynamic.string("2025-01-09T08:41:52Z"),
+          ),
+          #(dynamic.string("updated_at"), dynamic.string("2025-01-09T08:41:52Z")),
+          #(dynamic.string("type"), dynamic.string("password")),
+        ]),
+      ]),
+    ),
+    #(
+      dynamic.string("custom_claims"),
+      dynamic.properties([
+        #(dynamic.string("claim1"), dynamic.string("value1")),
+      ]),
+    ),
+    #(dynamic.string("expires_at"), dynamic.string("2025-04-22T08:00:00Z")),
+    #(
+      dynamic.string("last_accessed_at"),
+      dynamic.string("2025-04-22T07:41:52Z"),
+    ),
+    #(dynamic.string("started_at"), dynamic.string("2025-04-22T07:00:00Z")),
+    #(dynamic.string("session_id"), dynamic.string("session-test-123")),
+    #(dynamic.string("user_id"), dynamic.string("user-test-123")),
+  ])
+}
+
+fn sample_session_data() -> data.Session {
+  data.Session(
+    attributes: data.SessionAttributes(ip_address: "", user_agent: ""),
+    authentication_factors: [
+      data.AuthenticationFactor(
+        created_at: "2025-01-09T07:41:52Z",
+        delivery_method: "email",
+        email_factor: option.Some(
+          data.EmailFactor(
+            email_address: "sandbox@stytch.com",
+            email_id: "email-test-123",
+          ),
+        ),
+        last_authenticated_at: "2025-01-09T07:41:52Z",
+        updated_at: "2025-01-09T07:41:52Z",
+        factor_type: "magic_link",
+      ),
+      data.AuthenticationFactor(
+        created_at: "2025-01-09T08:41:52Z",
+        delivery_method: "knowledge",
+        email_factor: option.None,
+        last_authenticated_at: "2025-01-09T08:41:52Z",
+        updated_at: "2025-01-09T08:41:52Z",
+        factor_type: "password",
+      ),
+    ],
+    custom_claims: [#("claim1", "value1")],
+    expires_at: "2025-04-22T08:00:00Z",
+    last_accessed_at: "2025-04-22T07:41:52Z",
+    started_at: "2025-04-22T07:00:00Z",
+    session_id: "session-test-123",
+    user_id: "user-test-123",
+  )
+}
+
 fn sample_user_dynamic() -> dynamic.Dynamic {
   dynamic.properties([
     #(dynamic.string("user_id"), dynamic.string("user-test-123")),
@@ -150,6 +246,43 @@ pub fn status_decoder_invalid_value_test() {
   let response_dyn = dynamic.string("unknown")
 
   should.be_error(decode.run(response_dyn, codec.status_decoder()))
+}
+
+pub fn session_auth_response_decoder_happy_path_test() {
+  let response_dyn =
+    dynamic.properties([
+      #(dynamic.string("status_code"), dynamic.int(200)),
+      #(dynamic.string("request_id"), dynamic.string("request-id-123123")),
+      #(dynamic.string("session"), sample_session_dynamic()),
+      #(dynamic.string("session_jwt"), dynamic.string("session-jwt-abc-123")),
+      #(dynamic.string("session_token"), dynamic.string("session-token-abc-123")),
+      #(dynamic.string("user"), sample_user_dynamic()),
+      #(
+        dynamic.string("verdict"),
+        dynamic.properties([
+          #(dynamic.string("authorized"), dynamic.bool(True)),
+          #(
+            dynamic.string("granting_roles"),
+            dynamic.list([dynamic.string("stytch_user")]),
+          ),
+        ]),
+      ),
+    ])
+
+  should.equal(
+    decode.run(response_dyn, codec.session_auth_response_decoder()),
+    Ok(data.SessionAuthResponse(
+      status_code: 200,
+      request_id: "request-id-123123",
+      session: sample_session_data(),
+      session_jwt: "session-jwt-abc-123",
+      session_token: "session-token-abc-123",
+      user: sample_user_data(),
+      verdict: option.Some(
+        data.Verdict(authorized: True, granting_roles: ["stytch_user"]),
+      ),
+    )),
+  )
 }
 
 pub fn auth_response_decoder_real_data_test() {

@@ -81,6 +81,67 @@ pub type User {
   )
 }
 
+pub type SessionAttributes {
+  SessionAttributes(
+    ip_address: String,
+    user_agent: String,
+  )
+}
+
+pub type EmailFactor {
+  EmailFactor(
+    email_address: String,
+    email_id: String,
+  )
+}
+
+pub type AuthenticationFactor {
+  AuthenticationFactor(
+    created_at: String,
+    delivery_method: String,
+    email_factor: option.Option(EmailFactor),
+    last_authenticated_at: String,
+    updated_at: String,
+    factor_type: String,
+  )
+}
+
+pub type Session {
+  Session(
+    attributes: SessionAttributes,
+    authentication_factors: List(AuthenticationFactor),
+    custom_claims: List(#(String, String)),
+    expires_at: String,
+    last_accessed_at: String,
+    started_at: String,
+    session_id: String,
+    user_id: String,
+  )
+}
+
+pub type SessionResponse {
+  SessionResponse(session: Session)
+}
+
+pub type Verdict {
+  Verdict(
+    authorized: Bool,
+    granting_roles: List(String),
+  )
+}
+
+pub type SessionAuthResponse {
+  SessionAuthResponse(
+    status_code: Int,
+    request_id: String,
+    session: Session,
+    session_jwt: SessionJWT,
+    session_token: SessionToken,
+    user: User,
+    verdict: option.Option(Verdict),
+  )
+}
+
 pub type AuthResponse {
   AuthResponse(
     status_code: Int,
